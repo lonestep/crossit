@@ -1,5 +1,5 @@
 # crossit
-Crossit is a `python&amp;django` based web tools which bring you an elegant solution for `Office Automation`.
+Crossit is a `python&django` based web tools which bring you an elegant solution for `Office Automation`.
 it provides you the following features:
 * online check-in.
 * share resources like books/rooms/machines...within the company.
