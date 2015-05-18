@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>地合网实验室</title>
+    <link rel="icon" href="{{STATIC_URL}}img/favicon.ico">
+    
+  </head>
+  <body>
+  	<div class="container-fluid">
+  	<div class="row hdr"></div>
+  	</div>
+    <div class="container">
+    	<div class="row">
+      <form class="form-signin">
+      	{% csrf_token %}
+        <h2 class="form-signin-heading">请用地合网邮箱登陆</h2>
+        <label for="inputEmail" class="sr-only">邮箱</label>
+        <div class="e_wrapper">
+        <input type="text" id="inputEmail" name="email" class="form-control email" maxlength="16" placeholder="邮箱" required autofocus>
+        <span class="e_append">@idihe.com</span>
+        </div>
+        <label for="inputPassword" class="sr-only">密码</label>
+        <input type="password" id="inputPassword" name="password" class="form-control psw" maxlength="24" placeholder="密码" required>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="remember-me"> 记住我
+          </label>
+        </div>
+        <button id="btn-login" class="btn btn-lg btn-primary btn-block" type="submit">登陆</button>
+      </form>
+      </div>
+    </div>
+
+  <script data-main="{{STATIC_URL}}res/index" src="{{STATIC_URL}}res/require.js"></script>
+  </body>
+</html>
+
+
