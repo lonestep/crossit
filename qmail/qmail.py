@@ -251,10 +251,3 @@ class Qmail:
     def getNameList(self):
         return [email.split('@')[0] for email in self.users]
         
-if __name__ == "__main__":
-    qmail = Qmail('lonestep1','48f0685065ef95a1df5e896b99359005')
-    depts = qmail.initDepts(qmail.depts)
-    for m in depts['技术部'].subs['PHP组'].members:
-        print(m)
-    print(depts['技术部'].Serialize())
-    del qmail
