@@ -1,5 +1,5 @@
-import http.client, urllib.parse
-import json
+import http.client, urllib.parse,datetime
+import json,os
 import time,webbrowser
 '''
 '''
@@ -30,6 +30,12 @@ class QmailUser:
     def __init__(self,email,auth_key):
         self.email    = email
         self.auth_key = auth_key
+        self.name     = None
+        self.unread   = None
+        self.last     = datetime.datetime.now()
+        self.detail   = None
+    def __str__(self):
+        return 'email:%s name:%s unread:%s last:%s' %(self.email,self.name,self.unread,self.last)
 
 '''
 '''
@@ -40,6 +46,7 @@ class Qmail:
     def __init__(self,admin,secret,verbose=False):
         self.secret     = secret
         self.verbose    = verbose
+        self.domain     = 'idihe.com'
         self.host       = 'exmail.qq.com'
         self.api_host   = 'openapi.exmail.qq.com'
         self.port       = 12211
@@ -126,7 +133,13 @@ class Qmail:
         	self.users[email] = usr
         	return True
         return False
-
+    '''
+    '''
+    def syncAuthkey(self,email):
+        param   = {'alias': email}
+        data    = self.__reqServerApi(self.auth_url,param)
+        if data:
+            self.users[email].auth_key = data['auth_key']
     '''
     Get department information for the company
     '''
@@ -177,11 +190,21 @@ class Qmail:
     get unread count for an user specified by the email
     '''
     def getUnreadCount(self,email):
-        params  = {'alias':email}
-        data    = self.__reqServerApi(self.new_url,params)
-        if data:
-        	self.VPrint(data)
-        return data
+        u = self.users[email]
+        last = datetime.datetime.now()
+        delta_s = (last - u.last).seconds
+        #Update from server only when timeout or initial
+        if not u.unread or delta_s > 10:
+            params  = {'alias':email}
+            data    = self.__reqServerApi(self.new_url,params)
+            if data:
+                self.VPrint(data)
+            if 'NewCount' in data:
+                self.users[email].last = last
+                self.users[email].unread = data['NewCount']
+            return data
+        #Get from cache
+        return {'NewCount':u.unread}
 
     '''
     get party information,specify by partypath
@@ -201,12 +224,37 @@ class Qmail:
         if data:
         	self.VPrint(data)
         dt = {}
+        if 'error' in data:
+            return dt
         for email in data['List']:
-            x = self.getUserDetail(email['Value'])
-            dt[x['Name']] = x
+            if email['Value'] not in self.users:
+                self.initAuthKey(email['Value'])
+            u = self.users[email['Value']]
+            if not u.name:
+                x = self.getUserDetail(email['Value'])
+                self.users[email['Value']].name = x['Name']
+                self.users[email['Value']].detail = x
+                dt[x['Name']] = x
+            else:
+                dt[u.name] = self.users[u.email].detail
+            if not u.unread:
+                x = self.getUnreadCount(email['Value'])
+                if 'NewCount' in x:
+                    self.users[email['Value']].unread = x['NewCount']
         return dt
+    '''
+    retrn available email(s) in the company
+    '''
+    def getEmailList(self):
+        return [email for email in self.users]
+
+    def getNameList(self):
+        return [email.split('@')[0] for email in self.users]
         
-if __name__ == '__main__':
-    m   = Qmail('<usr>','<key>')
-    del m
-    
+if __name__ == "__main__":
+    qmail = Qmail('lonestep1','48f0685065ef95a1df5e896b99359005')
+    depts = qmail.initDepts(qmail.depts)
+    for m in depts['技术部'].subs['PHP组'].members:
+        print(m)
+    print(depts['技术部'].Serialize())
+    del qmail

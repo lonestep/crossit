@@ -4,10 +4,11 @@ from django.contrib.auth.models import *
 from django.core.mail import send_mail
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
-
 
-#User manager, create dihe user
-class DiHeUserManager(BaseUserManager):
+
+
+#User manager, create cross user
+class CrossUserManager(BaseUserManager):
     def _create_user(self, first_name,last_name, email, password,
                      is_active,is_superuser,is_staff,**extra_fields):
         """
@@ -33,8 +34,8 @@ class DiHeUserManager(BaseUserManager):
     def create_superuser(self, first_name,last_name, email, password,**extra_fields):
         return self._create_user(first_name,last_name, email, password,True,True,True,**extra_fields);
 
-#Abstract dihe user, parent class for DiHeUser 
-class DiHeAbstractUser(AbstractBaseUser,PermissionsMixin):
+#Abstract dihe user, parent class for CrossUser 
+class CrossAbstractUser(AbstractBaseUser,PermissionsMixin):
     first_name  = models.CharField(_('first name'), max_length=30)
     last_name   = models.CharField(_('last name'), max_length=30)
     email       = models.EmailField(_('email address'),unique=True)
@@ -43,7 +44,7 @@ class DiHeAbstractUser(AbstractBaseUser,PermissionsMixin):
         help_text=_('Designates whether the user can log into this admin '
                     'site.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
-    objects = DiHeUserManager()
+    objects = CrossUserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name','last_name']
     class Meta:
@@ -73,7 +74,7 @@ GENDER_CHOICES = (
     ('FEMALE', 2),
 )
 #Class representing a homesa user  
-class DiHeUser(DiHeAbstractUser):
+class CrossUser(CrossAbstractUser):
     hasMsg    = models.BooleanField(verbose_name="是否有新信息",default=False)
     mood      = models.CharField(max_length=128,default='',blank=True, null=True)
     addr      = models.CharField(max_length=128,default='',blank=True, null=True)
@@ -90,6 +91,18 @@ class DiHeUser(DiHeAbstractUser):
     avatar    = models.FileField(upload_to=GetUsrFilePath,default='default/default_avatar.png')
     tmpfile   = models.FileField(upload_to=GetUsrTempFilePath,default='/media/tmp/')
     mcount    = models.PositiveIntegerField(default=0)
-    class Meta(DiHeAbstractUser.Meta):
+    class Meta(CrossAbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
 
+#Verify codes for registering 
+class VCode(models.Model):
+    vcode = models.CharField(max_length=4,default='',blank=True, null=True)
+    name  = models.CharField(_('邮箱用户名'), max_length=30)
+
+class MailJobQue(models.Model):
+    subject = models.CharField(max_length=32,default='',blank=True, null=True)
+    from_em = models.CharField(max_length=32,default='',blank=True, null=True)
+    to_list = models.CharField(max_length=256,default='',blank=True, null=True)
+    cc_list = models.CharField(max_length=256,default='',blank=True, null=True)
+    content = models.CharField(max_length=512,default='',blank=True, null=True)
+    html_ct = models.CharField(max_length=512,default='',blank=True, null=True)
