@@ -5,3 +5,5 @@ it provides you the following features:
 * share resources like books/rooms/machines...within the company.
 * online daily-report.
 * more features will come up in the future.
+ 
+ADD SOMETHING FOR DEMO PURPOSE.
